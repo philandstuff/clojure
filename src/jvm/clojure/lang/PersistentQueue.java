@@ -10,8 +10,12 @@
 
 package clojure.lang;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
 //import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
@@ -21,7 +25,7 @@ import java.util.Iterator;
  * so no reversing or suspensions required for persistent use
  */
 
-public class PersistentQueue extends Obj implements IPersistentList, Collection, Counted, IHashEq{
+public class PersistentQueue extends Obj implements IPersistentList, Collection, Counted, IHashEq, List {
 
 final public static PersistentQueue EMPTY = new PersistentQueue(null, 0, null, null);
 
@@ -41,7 +45,7 @@ PersistentQueue(IPersistentMap meta, int cnt, ISeq f, PersistentVector r){
 
 public boolean equiv(Object obj){
 
-	if(!(obj instanceof Sequential))
+	if(!(obj instanceof Sequential || obj instanceof List))
 		return false;
 	ISeq ms = RT.seq(obj);
 	for(ISeq s = seq(); s != null; s = s.next(), ms = ms.next())
@@ -55,7 +59,7 @@ public boolean equiv(Object obj){
 
 public boolean equals(Object obj){
 
-	if(!(obj instanceof Sequential))
+	if(!(obj instanceof Sequential || obj instanceof List))
 		return false;
 	ISeq ms = RT.seq(obj);
 	for(ISeq s = seq(); s != null; s = s.next(), ms = ms.next())
@@ -236,6 +240,58 @@ public boolean contains(Object o){
 public Iterator iterator(){
 	return new SeqIterator(seq());
 }
+
+//////////// List stuff /////////////////
+private List reify(){
+    return Collections.unmodifiableList(new ArrayList(this));
+}
+
+public List subList(int fromIndex, int toIndex){
+    return reify().subList(fromIndex, toIndex);
+}
+
+public Object set(int index, Object element){
+    throw new UnsupportedOperationException();
+}
+
+public Object remove(int index){
+    throw new UnsupportedOperationException();
+}
+
+public int indexOf(Object o){
+    ISeq s = seq();
+    for(int i = 0; s != null; s = s.next(), i++)
+    {
+        if(Util.equiv(s.first(), o))
+            return i;
+    }
+    return -1;
+}
+
+public int lastIndexOf(Object o){
+    return reify().lastIndexOf(o);
+}
+
+public ListIterator listIterator(){
+    return reify().listIterator();
+}
+
+public ListIterator listIterator(int index){
+    return reify().listIterator(index);
+}
+
+public Object get(int index){
+    return RT.nth(this, index);
+}
+
+public void add(int index, Object element){
+    throw new UnsupportedOperationException();
+}
+
+public boolean addAll(int index, Collection c){
+    throw new UnsupportedOperationException();
+}
+
 
 /*
 public static void main(String[] args){
