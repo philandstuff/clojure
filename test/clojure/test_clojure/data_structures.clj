@@ -871,7 +871,9 @@
       (range 5) (into EMPTY (range 5))
       (range 1 6) (-> EMPTY
                     (into (range 6))
-                    pop))
+                    pop)
+      (doto (java.util.ArrayList.) (.addAll [1 2 3]))
+              (conj EMPTY 1 2 3))
     (are [x y] (not= x y)
       (range 5) (into EMPTY (range 6))
       (range 6) (into EMPTY (range 5))

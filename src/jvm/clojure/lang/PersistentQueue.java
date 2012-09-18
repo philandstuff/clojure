@@ -10,8 +10,6 @@
 
 package clojure.lang;
 
-import java.util.Collection;
-import java.util.Iterator;
 //import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
@@ -21,7 +19,7 @@ import java.util.Iterator;
  * so no reversing or suspensions required for persistent use
  */
 
-public class PersistentQueue extends Obj implements IPersistentList, Collection, Counted, IHashEq{
+public class PersistentQueue extends ASequential implements IPersistentList, Counted {
 
 final public static PersistentQueue EMPTY = new PersistentQueue(null, 0, null, null);
 
@@ -30,63 +28,12 @@ final int cnt;
 final ISeq f;
 final PersistentVector r;
 //static final int INITIAL_REAR_SIZE = 4;
-int _hash = -1;
 
 PersistentQueue(IPersistentMap meta, int cnt, ISeq f, PersistentVector r){
 	super(meta);
 	this.cnt = cnt;
 	this.f = f;
 	this.r = r;
-}
-
-public boolean equiv(Object obj){
-
-	if(!(obj instanceof Sequential))
-		return false;
-	ISeq ms = RT.seq(obj);
-	for(ISeq s = seq(); s != null; s = s.next(), ms = ms.next())
-		{
-		if(ms == null || !Util.equiv(s.first(), ms.first()))
-			return false;
-		}
-	return ms == null;
-
-}
-
-public boolean equals(Object obj){
-
-	if(!(obj instanceof Sequential))
-		return false;
-	ISeq ms = RT.seq(obj);
-	for(ISeq s = seq(); s != null; s = s.next(), ms = ms.next())
-		{
-		if(ms == null || !Util.equals(s.first(), ms.first()))
-			return false;
-		}
-	return ms == null;
-
-}
-
-public int hashCode(){
-	if(_hash == -1)
-		{
-		int hash = 1;
-		for(ISeq s = seq(); s != null; s = s.next())
-			{
-			hash = 31 * hash + (s.first() == null ? 0 : s.first().hashCode());
-			}
-		this._hash = hash;
-		}
-	return _hash;
-}
-
-public int hasheq() {
-    int hash = 1;
-    for(ISeq s = seq(); s != null; s = s.next())
-    {
-        hash = 31 * hash + Util.hasheq(s.first());
-    }
-    return hash;
 }
 
 public Object peek(){
@@ -171,70 +118,6 @@ static class Seq extends ASeq{
 	public Seq withMeta(IPersistentMap meta){
 		return new Seq(meta, f, rseq);
 	}
-}
-
-// java.util.Collection implementation
-
-public Object[] toArray(){
-	return RT.seqToArray(seq());
-}
-
-public boolean add(Object o){
-	throw new UnsupportedOperationException();
-}
-
-public boolean remove(Object o){
-	throw new UnsupportedOperationException();
-}
-
-public boolean addAll(Collection c){
-	throw new UnsupportedOperationException();
-}
-
-public void clear(){
-	throw new UnsupportedOperationException();
-}
-
-public boolean retainAll(Collection c){
-	throw new UnsupportedOperationException();
-}
-
-public boolean removeAll(Collection c){
-	throw new UnsupportedOperationException();
-}
-
-public boolean containsAll(Collection c){
-	for(Object o : c)
-		{
-		if(contains(o))
-			return true;
-		}
-	return false;
-}
-
-public Object[] toArray(Object[] a){
-    return RT.seqToPassedArray(seq(), a);
-}
-
-public int size(){
-	return count();
-}
-
-public boolean isEmpty(){
-	return count() == 0;
-}
-
-public boolean contains(Object o){
-	for(ISeq s = seq(); s != null; s = s.next())
-		{
-		if(Util.equiv(s.first(), o))
-			return true;
-		}
-	return false;
-}
-
-public Iterator iterator(){
-	return new SeqIterator(seq());
 }
 
 /*
